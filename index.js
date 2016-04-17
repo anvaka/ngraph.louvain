@@ -1,0 +1,32 @@
+var createCommunityGraph = require('./lib/createCommunityGraph.js');
+var createCommunity = require('./lib/createCommunity.js');
+
+module.exports = modularity;
+
+function modularity(ngraph) {
+  var graph = createCommunityGraph(ngraph);
+  var community = createCommunity(graph);
+  var originalModularity = community.modularity();
+
+  var nodesMoved = community.optimizeModularity();
+  var newModularity = community.modularity();
+
+  return {
+    canCoarse: canCoarse,
+    originalModularity: originalModularity,
+    newModularity: newModularity,
+    getClass: getClass
+  };
+
+  function canCoarse() {
+    // If there was movement last turn - we can coarse graph further.
+    return nodesMoved;
+  }
+
+  function getClass(nodeId) {
+    var node = graph.getNodeIdFromNgraph(nodeId);
+    return community.getClass(node);
+  }
+}
+
+

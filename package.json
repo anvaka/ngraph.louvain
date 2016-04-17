@@ -4,7 +4,8 @@
   "description": "Given a graph instance detects communities using the Louvain Method",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tap test/*.js",
+    "demo": "browserify demo/basic/index.js > demo/basic/bundle.js"
   },
   "keywords": [
     "modularity",
@@ -19,5 +20,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/anvaka/ngraph.modularity"
+  },
+  "dependencies": {
+    "ngraph.random": "0.0.1"
+  },
+  "devDependencies": {
+    "miserables": "^1.0.0",
+    "ngraph.coarsen": "^1.0.0",
+    "ngraph.svg": "0.0.15",
+    "tap": "^5.7.1"
   }
 }
