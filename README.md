@@ -42,6 +42,12 @@ while(clusters.canCoarse()) {
 npm install ngraph.louvain
 ```
 
+# see also
+
+* https://github.com/anvaka/ngraph.graph - graph structure
+* https://github.com/anvaka/ngraph.cw - label-propagation based community detection
+* https://github.com/anvaka/ngraph.coarsen - Graph coarser
+
 # license
 
 MIT
