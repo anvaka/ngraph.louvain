@@ -1,6 +1,7 @@
 # ngraph.modularity
 
 Given a graph instance detects clusters using the [Louvain Method](https://en.wikipedia.org/wiki/Louvain_Modularity).
+[Demo](https://anvaka.github.io/ngraph.modularity/demo/basic/)
 
 # usage
 
