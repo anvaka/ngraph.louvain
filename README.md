@@ -36,6 +36,12 @@ while(clusters.canCoarse()) {
 }
 ```
 
+# install
+
+```
+npm install ngraph.modularity
+```
+
 # license
 
 MIT
