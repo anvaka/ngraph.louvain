@@ -1,47 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var colors = [
-  '#1f77b4', '#aec7e8',
-  '#ff7f0e', '#ffbb78',
-  '#2ca02c', '#98df8a',
-  '#d62728', '#ff9896',
-  '#9467bd', '#c5b0d5',
-  '#8c564b', '#c49c94',
-  '#e377c2', '#f7b6d2',
-  '#7f7f7f', '#c7c7c7',
-  '#bcbd22'
-];
-
-var lastUsed = 0;
-var idToIndex = Object.create(null);
-
-function getColor(id) {
-  var idx = idToIndex[id];
-  if (idx === undefined) {
-    idx = idToIndex[id] = lastUsed;
-    lastUsed += 1;
-  }
-  return colors[idx];
-}
-
-module.exports = getColor;
-
-},{}],2:[function(require,module,exports){
-var graph = require('miserables')
-
-
-// by default miserables comes with weights. For the pupose of this demo we will
-// remove all weights from the graph:
-graph.forEachLink(function(link) {
-  link.data = 1;
-});
-
-module.exports = graph;
-
-},{"miserables":10}],3:[function(require,module,exports){
-var getColor = require('./getColor.js');
 var modularity = require('../../');
 
-var graph = require('./getGraph.js');
+var getColor = require('../lib/getColor.js');
+var graph = require('../lib/getGraph.js');
 
 console.time('cluster');
 var clusters = modularity(graph);
@@ -97,7 +58,46 @@ function renderGraph(graph) {
   }
 }
 
-},{"../../":4,"./getColor.js":1,"./getGraph.js":2,"ngraph.svg":29}],4:[function(require,module,exports){
+},{"../../":4,"../lib/getColor.js":2,"../lib/getGraph.js":3,"ngraph.svg":29}],2:[function(require,module,exports){
+var colors = [
+  '#1f77b4', '#aec7e8',
+  '#ff7f0e', '#ffbb78',
+  '#2ca02c', '#98df8a',
+  '#d62728', '#ff9896',
+  '#9467bd', '#c5b0d5',
+  '#8c564b', '#c49c94',
+  '#e377c2', '#f7b6d2',
+  '#7f7f7f', '#c7c7c7',
+  '#bcbd22'
+];
+
+var lastUsed = 0;
+var idToIndex = Object.create(null);
+
+function getColor(id) {
+  var idx = idToIndex[id];
+  if (idx === undefined) {
+    idx = idToIndex[id] = lastUsed;
+    lastUsed += 1;
+  }
+  return colors[idx];
+}
+
+module.exports = getColor;
+
+},{}],3:[function(require,module,exports){
+var graph = require('miserables')
+
+
+// by default miserables comes with weights. For the pupose of this demo we will
+// remove all weights from the graph:
+graph.forEachLink(function(link) {
+  link.data = 1;
+});
+
+module.exports = graph;
+
+},{"miserables":10}],4:[function(require,module,exports){
 var createCommunityGraph = require('./lib/createCommunityGraph.js');
 var createCommunity = require('./lib/createCommunity.js');
 
@@ -5949,4 +5949,4 @@ function _addWheelListener( elem, eventName, callback, useCapture ) {
   }, useCapture || false );
 }
 
-},{}]},{},[3]);
+},{}]},{},[1]);
