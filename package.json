@@ -1,5 +1,5 @@
 {
-  "name": "ngraph.modularity",
+  "name": "ngraph.louvain",
   "version": "1.0.0",
   "description": "Given a graph instance detects communities using the Louvain Method",
   "main": "index.js",
@@ -19,7 +19,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anvaka/ngraph.modularity"
+    "url": "https://github.com/anvaka/ngraph.louvain"
   },
   "dependencies": {
     "ngraph.random": "0.0.1"
