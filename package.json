@@ -1,0 +1,23 @@
+{
+  "name": "ngraph.modularity",
+  "version": "1.0.0",
+  "description": "Given a graph instance detects communities using the Louvain Method",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "modularity",
+    "graph",
+    "community",
+    "structure",
+    "louvain",
+    "blondel"
+  ],
+  "author": "Andrei Kashcha",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anvaka/ngraph.modularity"
+  }
+}
