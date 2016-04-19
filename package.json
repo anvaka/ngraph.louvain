@@ -27,6 +27,7 @@
   "devDependencies": {
     "miserables": "^1.0.0",
     "ngraph.coarsen": "^1.0.0",
+    "ngraph.graph": "0.0.12",
     "ngraph.svg": "0.0.15",
     "tap": "^5.7.1"
   }
