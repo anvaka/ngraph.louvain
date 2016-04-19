@@ -1,6 +1,6 @@
 {
   "name": "ngraph.louvain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Given a graph instance detects communities using the Louvain Method",
   "main": "index.js",
   "scripts": {
