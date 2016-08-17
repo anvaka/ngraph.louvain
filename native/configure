@@ -1,0 +1,1 @@
+ngyp ./project.gyp --depth=. --toplevel-dir=. -fxcode --generator-output=build
