@@ -4,7 +4,7 @@
   ],
   'targets': [{
       'target_name': 'louvain',
-      'type': 'static_library',
+      'type': 'executable',
       'sources': [
         './headers/community-graph.h',
         './src/community-graph.cc',
