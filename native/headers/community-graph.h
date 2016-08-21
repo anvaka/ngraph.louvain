@@ -22,15 +22,14 @@ class CommunityGraph {
 private:
   NodeId _numberOfNodes;
 
-  // TODO: These double may need to be changed to ints
   // i'th element in this array gives number of self loops for the i-th node
-  double *_selfLoopsCount;
+  NodeId *_selfLoopsCount;
 
   // maps node index to its weight
-  double *_weightedDegree;
+  int *_weightedDegree;
 
-  double *_communityLinksWeight;
-  double *_communityInternalLinksWeight;
+  int *_communityLinksWeight;
+  int *_communityInternalLinksWeight;
 
   // Used to randomly iterate over nodes;
   NodeId *_randomIndices;
@@ -51,21 +50,21 @@ private:
     }
   }
 
-  void removeFromCommunity(NodeId nodeId, NodeId communityId, double sharedLinksWeight) {
+  void removeFromCommunity(NodeId nodeId, NodeId communityId, int sharedLinksWeight) {
     _communityLinksWeight[communityId] -= _weightedDegree[nodeId];
     _communityInternalLinksWeight[communityId] -= 2 * sharedLinksWeight + _selfLoopsCount[nodeId];
 
     _nodeToCommunity[nodeId] = -1; //remove node from community
   }
 
-  void insertIntoCommunity(NodeId nodeId, NodeId communityId, double sharedLinksWeight) {
+  void insertIntoCommunity(NodeId nodeId, NodeId communityId, int sharedLinksWeight) {
     _communityLinksWeight[communityId] += _weightedDegree[nodeId];
     _communityInternalLinksWeight[communityId] += 2 * sharedLinksWeight + _selfLoopsCount[nodeId];
     _nodeToCommunity[nodeId] = communityId;
   }
 
-  std::map<NodeId, double> getNeighbouringCommunities(NodeId node) {
-    std::map<NodeId, double> communityIdToWeight;
+  std::map<NodeId, int> getNeighbouringCommunities(NodeId node) {
+    std::map<NodeId, int> communityIdToWeight;
     auto nodeCommunity = _nodeToCommunity[node];
     communityIdToWeight[nodeCommunity] = 0;
 
@@ -87,7 +86,7 @@ private:
     return communityIdToWeight;
   }
 
-  double getTotalWeight() {
+  int getTotalWeight() {
     auto weight = 0.0;
 
     for (auto i = 0; i < _numberOfNodes; ++i) {
@@ -116,12 +115,12 @@ public:
     }
 
     std::srand(42);
-    // (8 + 8 + 4 + 4 + 8 + 8 + *) * V + (4 + 8) * E
-    _selfLoopsCount = new double[numberOfNodes];
-    _weightedDegree = new double[numberOfNodes];
+    // (8 + 8 + 8 + 8 + 8 + 8 + 8) * V + (4 + 8) * E
+    _selfLoopsCount = new int[numberOfNodes];
+    _weightedDegree = new int[numberOfNodes];
 
-    _communityInternalLinksWeight = new double[numberOfNodes];
-    _communityLinksWeight = new double[numberOfNodes];
+    _communityInternalLinksWeight = new int[numberOfNodes];
+    _communityLinksWeight = new int[numberOfNodes];
 
     _neighbours = new NeigbourList[numberOfNodes];
     _randomIndices = new NodeId[numberOfNodes];
@@ -154,7 +153,7 @@ public:
         for (auto it = _neighbours[i]->cbegin(); it != _neighbours[i]->cend(); ++it){
           delete *it;
         }
-        delete [] _neighbours[i];
+        delete _neighbours[i];
       }
     }
   }
@@ -231,7 +230,7 @@ public:
     return modularityImproved;
   }
 
-  void addLink(NodeId fromId, NodeId toId, double linkWeight) {
+  void addLink(NodeId fromId, NodeId toId, int linkWeight) {
     if (0 > fromId || fromId >= _numberOfNodes) throw std::out_of_range("fromId");
     if (0 > toId || toId >= _numberOfNodes) throw std::out_of_range("toId");
 
