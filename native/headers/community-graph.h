@@ -148,7 +148,7 @@ public:
     delete [] _communityInternalLinksWeight;
     delete [] _communityLinksWeight;
 
-    for (int i; i < _numberOfNodes; ++i) {
+    for (int i = 0; i < _numberOfNodes; ++i) {
       if (_neighbours[i] != nullptr) {
         for (auto it = _neighbours[i]->cbegin(); it != _neighbours[i]->cend(); ++it){
           delete *it;
