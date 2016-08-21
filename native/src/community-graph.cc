@@ -3,10 +3,10 @@
 
 
 int main() {
-  CommunityGraph graph(5);
+  CommunityGraph graph(3);
 
-  graph.addLink(0, 1, 1);
   graph.addLink(1, 2, 1);
+  auto improved = graph.optimizeModularity();
 
-  std::cout << graph.getTotalWeight() << std::endl;
+  std::cout << graph.getModularity() << std::endl;
 }
