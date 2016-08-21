@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "miserables": "^1.0.0",
-    "ngraph.coarsen": "^1.0.0",
+    "ngraph.coarsen": "^1.2.0",
     "ngraph.graph": "0.0.12",
     "ngraph.svg": "0.0.15",
     "ngyp": "^1.0.1",

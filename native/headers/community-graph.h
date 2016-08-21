@@ -160,6 +160,10 @@ public:
 
   NodeId getNodeCount() { return _numberOfNodes; }
 
+  int getClass(NodeId node) {
+    return _nodeToCommunity[node];
+  }
+
   double getModularity() {
     double result = 0;
     double graphWeight = getTotalWeight(); // TODO: this can be cached.

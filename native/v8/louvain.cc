@@ -19,6 +19,7 @@ NAN_MODULE_INIT(Louvain::Init) {
   Nan::SetPrototypeMethod(tpl, "addLink", AddLink);
   Nan::SetPrototypeMethod(tpl, "getModularity", GetModularity);
   Nan::SetPrototypeMethod(tpl, "optimizeModularity", OptimizeModularity);
+  Nan::SetPrototypeMethod(tpl, "getClass", GetClass);
 
   constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
   Nan::Set(target, Nan::New("CommunityGraph").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
@@ -80,3 +81,18 @@ NAN_METHOD(Louvain::OptimizeModularity) {
   auto result = self->_graph->optimizeModularity();
   info.GetReturnValue().Set(result);
 }
+
+NAN_METHOD(Louvain::GetClass) {
+  Louvain* self = ObjectWrap::Unwrap<Louvain>(info.This());
+
+  if (info.Length() < 1) {
+    Nan::ThrowError("nodeId is required");
+    return;
+  }
+
+  int nodeId = Nan::To<int>(info[0]).FromJust();
+
+  auto result = self->_graph->getClass(nodeId);
+  info.GetReturnValue().Set(result);
+}
+

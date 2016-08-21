@@ -25,6 +25,7 @@ class Louvain : public Nan::ObjectWrap {
 
   static NAN_METHOD(GetModularity);
   static NAN_METHOD(OptimizeModularity);
+  static NAN_METHOD(GetClass);
 };
 
 #endif
