@@ -8,7 +8,7 @@ function modularity(ngraph) {
   var community = createCommunity(graph);
   var originalModularity = community.modularity();
 
-  var nodesMoved = community.optimizeModularity();
+  var modularityImproved = community.optimizeModularity();
   var newModularity = community.modularity();
 
   return {
@@ -20,7 +20,7 @@ function modularity(ngraph) {
 
   function canCoarse() {
     // If there was movement last turn - we can coarse graph further.
-    return nodesMoved;
+    return modularityImproved;
   }
 
   function getClass(nodeId) {
