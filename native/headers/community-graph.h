@@ -1,5 +1,7 @@
 #include <vector>
 #include <map>
+#include <math.h>
+#include "random.h"
 
 typedef int NodeId; // We assume at least 32 bit for a node.
 
@@ -40,10 +42,13 @@ private:
   // array of pointers to std::vector
   NeigbourList *_neighbours;
 
+  Random _rnd;
+
   void shuffle() {
+
     for (NodeId i = _numberOfNodes - 1; i > 0; --i) {
       // TODO: this may not work if NodeId is not int.
-      auto j = std::rand() % (i + 1); // i inclusive
+      auto j = (int)floor(_rnd.next((i + 1))); // i inclusive
       auto t = _randomIndices[j];
       _randomIndices[j] = _randomIndices[i];
       _randomIndices[i] = t;
@@ -109,12 +114,11 @@ private:
 
 
 public:
-  CommunityGraph(NodeId numberOfNodes):_numberOfNodes(numberOfNodes) {
+  CommunityGraph(NodeId numberOfNodes):_numberOfNodes(numberOfNodes), _rnd(42) {
     if (numberOfNodes < 1) {
       throw std::out_of_range("numberOfNodes");
     }
 
-    std::srand(42);
     // (8 + 8 + 8 + 8 + 8 + 8 + 8) * V + (4 + 8) * E
     _selfLoopsCount = new int[numberOfNodes];
     _weightedDegree = new int[numberOfNodes];
@@ -208,13 +212,13 @@ public:
         // find best gain/community
         auto weightedDegree = _weightedDegree[node];
         NodeId bestCommunity = nodeCommunity;
-        NodeId bestGain = 0;
+        double bestGain = 0;
 
         for(auto &kv: neigboughingCommunities) {
           auto communityId = kv.first;
           auto sharedWeight = kv.second;
 
-          auto gain = sharedWeight - _communityLinksWeight[communityId] * weightedDegree/graphWeight;
+          double gain = sharedWeight - _communityLinksWeight[communityId] * weightedDegree/graphWeight;
           if (gain <= bestGain) continue;
 
           bestCommunity = communityId;

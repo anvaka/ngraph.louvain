@@ -7,6 +7,7 @@
         "./native/headers"
       ],
       "sources": [
+        "./native/headers/random.h",
         "./native/headers/community-graph.h",
         "./native/v8/louvain.cc",
         "./native/v8/index.cc",
