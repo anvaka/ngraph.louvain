@@ -30,11 +30,39 @@ function fromNgraph(ngraph) {
 
   return {
     getClass: getClass,
-    canCoarse: canCoarse
+    canCoarse: canCoarse,
+
+    /**
+     * Allows clients to change cluster classes from random range of 0 to nodes count
+     * to a fixed range of 0 to clusters count.
+     *
+     * I.e. on regular run you can get the following mapping:
+     *
+     * node | cluster id
+     * -----|------------
+     *   0  |     2
+     *   1  |     2
+     *   2  |     3
+     *   3  |     3
+     *
+     *  After renumber:
+     *
+     * node | cluster id
+     * -----|------------
+     *   0  |     0
+     *   1  |     0
+     *   2  |     1
+     *   3  |     1
+     */
+    renumber: renumber
   }
 
   function canCoarse() {
     return modularityImproved;
+  }
+
+  function renumber() {
+    communityGraph.renumber();
   }
 
   function getClass(nodeId) {

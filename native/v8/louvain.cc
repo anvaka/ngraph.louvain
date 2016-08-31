@@ -20,6 +20,7 @@ NAN_MODULE_INIT(Louvain::Init) {
   Nan::SetPrototypeMethod(tpl, "getModularity", GetModularity);
   Nan::SetPrototypeMethod(tpl, "optimizeModularity", OptimizeModularity);
   Nan::SetPrototypeMethod(tpl, "getClass", GetClass);
+  Nan::SetPrototypeMethod(tpl, "renumber", Renumber);
 
   constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
   Nan::Set(target, Nan::New("CommunityGraph").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
@@ -96,3 +97,8 @@ NAN_METHOD(Louvain::GetClass) {
   info.GetReturnValue().Set(result);
 }
 
+NAN_METHOD(Louvain::Renumber) {
+  Louvain* self = ObjectWrap::Unwrap<Louvain>(info.This());
+
+  self->_graph->renumber();
+}

@@ -164,6 +164,23 @@ public:
 
   NodeId getNodeCount() { return _numberOfNodes; }
 
+  void renumber() {
+    std::vector<NodeId> zeroBasedIndex(_numberOfNodes, -1);
+    for (NodeId node = 0; node < _numberOfNodes; ++node) {
+      zeroBasedIndex[getClass(node)]++;
+    }
+
+    NodeId lastAvailableIndex = 0;
+    for (NodeId community = 0; community < _numberOfNodes; ++community) {
+      if (zeroBasedIndex[community] != -1) zeroBasedIndex[community] = lastAvailableIndex++;
+    }
+
+    for (NodeId node = 0; node < _numberOfNodes; ++node) {
+      int community = _nodeToCommunity[node];
+      _nodeToCommunity[node] = zeroBasedIndex[community];
+    }
+  }
+
   int getClass(NodeId node) {
     return _nodeToCommunity[node];
   }

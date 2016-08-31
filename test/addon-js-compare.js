@@ -2,16 +2,36 @@ var modularity = require('../');
 var createMiseablesGraph = require('miserables').create;
 var test = require('tap').test;
 
-var addonModularity = require('../native.js').fromNgraph;
+var detectClusters = require('../native.js').fromNgraph;
 
 test('native code gives exactly the same results as js code', function(t) {
   var graph = createMiseablesGraph();
   var jsCommunity = modularity(graph);
-  var addonCommunity = addonModularity(graph);
+  var clusters = detectClusters(graph);
 
   graph.forEachNode(function(node) {
-    t.equals(jsCommunity.getClass(node.id), addonCommunity.getClass(node.id), 'Node ' + node.id + ' was resolved correctly');
+    t.equals(jsCommunity.getClass(node.id), clusters.getClass(node.id), 'Node ' + node.id + ' was resolved correctly');
   })
+
+  t.end();
+});
+
+test('native code can renumber clusters', function(t) {
+  var graph = createMiseablesGraph();
+  var clusters = detectClusters(graph);
+  // renumber makes sure that class lies between 0 and cluster.length
+  clusters.renumber();
+
+  var clustersArray = [];
+  graph.forEachNode(function(node) {
+    clustersArray[clusters.getClass(node.id)] = true
+  })
+
+  t.ok(clustersArray.length > 0, 'some clusters found');
+
+  for (var i = 0; i < clustersArray.length; ++i) {
+    t.ok(clustersArray[i] === true, 'Cluster defined: ' + i);
+  }
 
   t.end();
 });
