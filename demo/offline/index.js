@@ -11,7 +11,6 @@ var coarsen = require('ngraph.coarsen');
 
 while(clusters.canCoarse()) {
   graph = coarsen(graph, clusters);
-  debugger;
   clusters = detectClusters(graph);
 
   graph.forEachNode(function(node) {
