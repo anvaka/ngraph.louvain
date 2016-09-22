@@ -100,5 +100,10 @@ NAN_METHOD(Louvain::GetClass) {
 NAN_METHOD(Louvain::Renumber) {
   Louvain* self = ObjectWrap::Unwrap<Louvain>(info.This());
 
-  self->_graph->renumber();
+  bool groupIsolatedNodes = false;
+  if (info.Length() > 0) {
+    groupIsolatedNodes = Nan::To<bool>(info[0]).FromJust();
+  }
+  
+  self->_graph->renumber(groupIsolatedNodes);
 }

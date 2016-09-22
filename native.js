@@ -61,8 +61,8 @@ function fromNgraph(ngraph) {
     return modularityImproved;
   }
 
-  function renumber() {
-    communityGraph.renumber();
+  function renumber(groupIsolatedNodes) {
+    communityGraph.renumber(groupIsolatedNodes);
   }
 
   function getClass(nodeId) {

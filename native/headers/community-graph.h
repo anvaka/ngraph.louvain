@@ -164,15 +164,35 @@ public:
 
   NodeId getNodeCount() { return _numberOfNodes; }
 
-  void renumber() {
+  void renumber(bool groupIsolatedNodes) {
     std::vector<NodeId> zeroBasedIndex(_numberOfNodes, -1);
     for (NodeId node = 0; node < _numberOfNodes; ++node) {
       zeroBasedIndex[getClass(node)]++;
     }
 
     NodeId lastAvailableIndex = 0;
-    for (NodeId community = 0; community < _numberOfNodes; ++community) {
-      if (zeroBasedIndex[community] != -1) zeroBasedIndex[community] = lastAvailableIndex++;
+    if (groupIsolatedNodes) {
+      NodeId isolateComunityId = -1;
+      for (NodeId community = 0; community < _numberOfNodes; ++community) {
+        if (zeroBasedIndex[community] == -1) {
+          continue; // Means that node at this index moved to somewhere else
+        }
+
+        if (zeroBasedIndex[community] == 0) {
+          // this is isolate
+          if (isolateComunityId < 0) isolateComunityId = lastAvailableIndex++;
+          zeroBasedIndex[community] = isolateComunityId;
+        } else {
+          zeroBasedIndex[community] = lastAvailableIndex++;
+        }
+      }
+    } else {
+      for (NodeId community = 0; community < _numberOfNodes; ++community) {
+        if (zeroBasedIndex[community] == -1) {
+          continue; // Means that node at this index moved to somewhere else
+        }
+        zeroBasedIndex[community] = lastAvailableIndex++;
+      }
     }
 
     for (NodeId node = 0; node < _numberOfNodes; ++node) {

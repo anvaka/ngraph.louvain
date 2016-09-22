@@ -1,6 +1,7 @@
 var modularity = require('../');
 var createMiseablesGraph = require('miserables').create;
 var test = require('tap').test;
+var createGraph = require('ngraph.graph');
 
 var detectClusters = require('../native.js').fromNgraph;
 
@@ -32,6 +33,26 @@ test('native code can renumber clusters', function(t) {
   for (var i = 0; i < clustersArray.length; ++i) {
     t.ok(clustersArray[i] === true, 'Cluster defined: ' + i);
   }
+
+  t.end();
+});
+
+test('native code can renumber and aggregate isolated nodes', function(t) {
+  var graph = createGraph();
+  graph.addLink(1, 2);
+  graph.addNode(3);
+  graph.addNode(4);
+
+  var clusters = detectClusters(graph);
+  // renumber makes sure that class lies between 0 and cluster.length
+  var groupIsolatedNodes = true;
+  t.notEqual(clusters.getClass(3), clusters.getClass(4), 'isolate nodes have different class first');
+
+  clusters.renumber(groupIsolatedNodes);
+
+  t.equals(clusters.getClass(3), clusters.getClass(4), 'isolate nodes class is the same now');
+  t.equals(clusters.getClass(1), clusters.getClass(2), 'connected node are at the same class');
+  t.notEqual(clusters.getClass(3), clusters.getClass(1), 'isolate node class is not the same as linked node ');
 
   t.end();
 });
