@@ -1,12 +1,12 @@
 var modularity = require('../');
-var createMiseablesGraph = require('miserables').create;
+var createMiserablesGraph = require('miserables').create;
 var test = require('tap').test;
 var createGraph = require('ngraph.graph');
 
 var detectClusters = require('../native.js').fromNgraph;
 
 test('native code gives exactly the same results as js code', function(t) {
-  var graph = createMiseablesGraph();
+  var graph = createMiserablesGraph();
   var jsCommunity = modularity(graph);
   var clusters = detectClusters(graph);
 
@@ -18,7 +18,7 @@ test('native code gives exactly the same results as js code', function(t) {
 });
 
 test('native code can renumber clusters', function(t) {
-  var graph = createMiseablesGraph();
+  var graph = createMiserablesGraph();
   var clusters = detectClusters(graph);
   // renumber makes sure that class lies between 0 and cluster.length
   clusters.renumber();
