@@ -3,9 +3,9 @@ var createCommunity = require('./lib/createCommunity.js');
 
 module.exports = modularity;
 
-function modularity(ngraph) {
+function modularity(ngraph, options) {
   var graph = createCommunityGraph(ngraph);
-  var community = createCommunity(graph);
+  var community = createCommunity(graph, options);
   var originalModularity = community.modularity();
 
   var modularityImproved = community.optimizeModularity();
