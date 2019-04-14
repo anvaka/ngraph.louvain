@@ -22,8 +22,6 @@
     "url": "https://github.com/anvaka/ngraph.louvain"
   },
   "dependencies": {
-    "bindings": "^1.2.1",
-    "nan": "^2.4.0",
     "ngraph.random": "0.0.1"
   },
   "devDependencies": {

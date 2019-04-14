@@ -103,12 +103,12 @@ var createCommunity = require('./lib/createCommunity.js');
 
 module.exports = modularity;
 
-function modularity(ngraph) {
+function modularity(ngraph, options) {
   var graph = createCommunityGraph(ngraph);
-  var community = createCommunity(graph);
+  var community = createCommunity(graph, options);
   var originalModularity = community.modularity();
 
-  var nodesMoved = community.optimizeModularity();
+  var modularityImproved = community.optimizeModularity();
   var newModularity = community.modularity();
 
   return {
@@ -120,7 +120,7 @@ function modularity(ngraph) {
 
   function canCoarse() {
     // If there was movement last turn - we can coarse graph further.
-    return nodesMoved;
+    return modularityImproved;
   }
 
   function getClass(nodeId) {
@@ -133,15 +133,14 @@ function modularity(ngraph) {
 
 },{"./lib/createCommunity.js":5,"./lib/createCommunityGraph.js":6}],5:[function(require,module,exports){
 var nrandom = require('ngraph.random');
-
-var seededRandom = nrandom.random(42);
 var randomIterator = nrandom.randomIterator;
 
 module.exports = createCommunity;
 
-function createCommunity(graph) {
+function createCommunity(graph, options) {
   var graphWeight = graph.weight;
   var nodeCount = graph.nodeCount;
+  var seededRandom = nrandom.random(42);
 
   var totalLinksWeight = new Float32Array(nodeCount);
   var internalLinksWeight = new Float32Array(nodeCount);
@@ -178,14 +177,17 @@ function createCommunity(graph) {
 
   function optimizeModularity() {
     var epsilon = 0.000001;
+    if (options && (options.seed !== undefined)) {
+      seededRandom = nrandom.random(options.seed);
+    }
 
     var iterator = getRandomNodeIdIterator();
     var newModularity = modularity();
-    var currentModularity = newModularity;
+    var currentModularity, movesCount;
     var modularityImproved = false;
 
     do {
-      var movesCount = 0;
+      movesCount = 0;
       currentModularity = newModularity;
       for (var i = 0; i < iterator.length; ++i) {
         var node = iterator[i];
@@ -201,10 +203,10 @@ function createCommunity(graph) {
         var bestGain = 0;
 
         neigboughingCommunities.forEach(function(sharedWeight, communityId) {
-          var gain = getModularityGain(node, sharedWeight, communityId, weightedDegree);
+          var gain = getModularityGain(sharedWeight, communityId, weightedDegree);
           if (gain <= bestGain) return;
 
-          bestCommunity = communityId
+          bestCommunity = communityId;
           bestGain = gain;
         });
 
@@ -235,7 +237,7 @@ function createCommunity(graph) {
     return map;
   }
 
-  function getModularityGain(nodeId, sharedWeight, communityId, degree) {
+  function getModularityGain(sharedWeight, communityId, degree) {
     var totalLinksWeightInThisCommunity = totalLinksWeight[communityId];
 
     return sharedWeight - totalLinksWeightInThisCommunity * degree/graphWeight;
@@ -340,7 +342,7 @@ function createCommunityGraph(ngraph) {
       };
       if (!node.neighbours) node.neighbours = [info];
       else node.neighbours.push(info);
-      // PS: We do not init neighbours array unless it's trulyu needed
+      // PS: We do not init neighbours array unless it's truly needed
   }
 
   function forEachNeigbour(nodeId, cb) {
@@ -449,11 +451,11 @@ function oldIEDetach(el, eventName, listener, useCapture) {
 }
 
 },{}],8:[function(require,module,exports){
-/*! Hammer.JS - v2.0.6 - 2015-12-23
+/*! Hammer.JS - v2.0.7 - 2016-04-22
  * http://hammerjs.github.io/
  *
- * Copyright (c) 2015 Jorik Tangelder;
- * Licensed under the  license */
+ * Copyright (c) 2016 Jorik Tangelder;
+ * Licensed under the MIT license */
 (function(window, document, exportName, undefined) {
   'use strict';
 
@@ -581,7 +583,7 @@ if (typeof Object.assign !== 'function') {
  * means that properties in dest will be overwritten by the ones in src.
  * @param {Object} dest
  * @param {Object} src
- * @param {Boolean=false} [merge]
+ * @param {Boolean} [merge=false]
  * @returns {Object} dest
  */
 var extend = deprecate(function extend(dest, src, merge) {
@@ -1242,7 +1244,6 @@ function MouseInput() {
     this.evEl = MOUSE_ELEMENT_EVENTS;
     this.evWin = MOUSE_WINDOW_EVENTS;
 
-    this.allow = true; // used by Input.TouchMouse to disable mouse events
     this.pressed = false; // mousedown state
 
     Input.apply(this, arguments);
@@ -1265,8 +1266,8 @@ inherit(MouseInput, Input, {
             eventType = INPUT_END;
         }
 
-        // mouse must be down, and mouse events are allowed (see the TouchMouse input)
-        if (!this.pressed || !this.allow) {
+        // mouse must be down
+        if (!this.pressed) {
             return;
         }
 
@@ -1549,12 +1550,19 @@ function getTouches(ev, type) {
  * @constructor
  * @extends Input
  */
+
+var DEDUP_TIMEOUT = 2500;
+var DEDUP_DISTANCE = 25;
+
 function TouchMouseInput() {
     Input.apply(this, arguments);
 
     var handler = bindFn(this.handler, this);
     this.touch = new TouchInput(this.manager, handler);
     this.mouse = new MouseInput(this.manager, handler);
+
+    this.primaryTouch = null;
+    this.lastTouches = [];
 }
 
 inherit(TouchMouseInput, Input, {
@@ -1568,17 +1576,15 @@ inherit(TouchMouseInput, Input, {
         var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
             isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
 
-        // when we're in a touch event, so  block all upcoming mouse events
-        // most mobile browser also emit mouseevents, right after touchstart
-        if (isTouch) {
-            this.mouse.allow = false;
-        } else if (isMouse && !this.mouse.allow) {
+        if (isMouse && inputData.sourceCapabilities && inputData.sourceCapabilities.firesTouchEvents) {
             return;
         }
 
-        // reset the allowMouse when we're done
-        if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
-            this.mouse.allow = true;
+        // when we're in a touch event, record touches to  de-dupe synthetic mouse event
+        if (isTouch) {
+            recordTouches.call(this, inputEvent, inputData);
+        } else if (isMouse && isSyntheticEvent.call(this, inputData)) {
+            return;
         }
 
         this.callback(manager, inputEvent, inputData);
@@ -1593,6 +1599,44 @@ inherit(TouchMouseInput, Input, {
     }
 });
 
+function recordTouches(eventType, eventData) {
+    if (eventType & INPUT_START) {
+        this.primaryTouch = eventData.changedPointers[0].identifier;
+        setLastTouch.call(this, eventData);
+    } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+        setLastTouch.call(this, eventData);
+    }
+}
+
+function setLastTouch(eventData) {
+    var touch = eventData.changedPointers[0];
+
+    if (touch.identifier === this.primaryTouch) {
+        var lastTouch = {x: touch.clientX, y: touch.clientY};
+        this.lastTouches.push(lastTouch);
+        var lts = this.lastTouches;
+        var removeLastTouch = function() {
+            var i = lts.indexOf(lastTouch);
+            if (i > -1) {
+                lts.splice(i, 1);
+            }
+        };
+        setTimeout(removeLastTouch, DEDUP_TIMEOUT);
+    }
+}
+
+function isSyntheticEvent(eventData) {
+    var x = eventData.srcEvent.clientX, y = eventData.srcEvent.clientY;
+    for (var i = 0; i < this.lastTouches.length; i++) {
+        var t = this.lastTouches[i];
+        var dx = Math.abs(x - t.x), dy = Math.abs(y - t.y);
+        if (dx <= DEDUP_DISTANCE && dy <= DEDUP_DISTANCE) {
+            return true;
+        }
+    }
+    return false;
+}
+
 var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
 var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
 
@@ -1603,6 +1647,7 @@ var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
 var TOUCH_ACTION_NONE = 'none';
 var TOUCH_ACTION_PAN_X = 'pan-x';
 var TOUCH_ACTION_PAN_Y = 'pan-y';
+var TOUCH_ACTION_MAP = getTouchActionProps();
 
 /**
  * Touch Action
@@ -1627,7 +1672,7 @@ TouchAction.prototype = {
             value = this.compute();
         }
 
-        if (NATIVE_TOUCH_ACTION && this.manager.element.style) {
+        if (NATIVE_TOUCH_ACTION && this.manager.element.style && TOUCH_ACTION_MAP[value]) {
             this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
         }
         this.actions = value.toLowerCase().trim();
@@ -1659,11 +1704,6 @@ TouchAction.prototype = {
      * @param {Object} input
      */
     preventDefaults: function(input) {
-        // not needed with native support for the touchAction property
-        if (NATIVE_TOUCH_ACTION) {
-            return;
-        }
-
         var srcEvent = input.srcEvent;
         var direction = input.offsetDirection;
 
@@ -1674,9 +1714,9 @@ TouchAction.prototype = {
         }
 
         var actions = this.actions;
-        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
-        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
-        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE) && !TOUCH_ACTION_MAP[TOUCH_ACTION_NONE];
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_Y];
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X) && !TOUCH_ACTION_MAP[TOUCH_ACTION_PAN_X];
 
         if (hasNone) {
             //do not prevent defaults if this is a tap gesture
@@ -1745,6 +1785,21 @@ function cleanTouchActions(actions) {
     }
 
     return TOUCH_ACTION_AUTO;
+}
+
+function getTouchActionProps() {
+    if (!NATIVE_TOUCH_ACTION) {
+        return false;
+    }
+    var touchMap = {};
+    var cssSupports = window.CSS && window.CSS.supports;
+    ['auto', 'manipulation', 'pan-y', 'pan-x', 'pan-x pan-y', 'none'].forEach(function(val) {
+
+        // If css.supports is not supported but there is native touch-action assume it supports
+        // all values. This is the case for IE 10 and 11.
+        touchMap[val] = cssSupports ? window.CSS.supports('touch-action', val) : true;
+    });
+    return touchMap;
 }
 
 /**
@@ -2543,7 +2598,7 @@ function Hammer(element, options) {
 /**
  * @const {string}
  */
-Hammer.VERSION = '2.0.6';
+Hammer.VERSION = '2.0.7';
 
 /**
  * default settings
@@ -2674,6 +2729,7 @@ function Manager(element, options) {
     this.handlers = {};
     this.session = {};
     this.recognizers = [];
+    this.oldCssProps = {};
 
     this.element = element;
     this.input = createInputInstance(this);
@@ -2852,6 +2908,13 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     on: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+        if (handler === undefined) {
+            return;
+        }
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             handlers[event] = handlers[event] || [];
@@ -2867,6 +2930,10 @@ Manager.prototype = {
      * @returns {EventEmitter} this
      */
     off: function(events, handler) {
+        if (events === undefined) {
+            return;
+        }
+
         var handlers = this.handlers;
         each(splitStr(events), function(event) {
             if (!handler) {
@@ -2931,9 +2998,19 @@ function toggleCssProps(manager, add) {
     if (!element.style) {
         return;
     }
+    var prop;
     each(manager.options.cssProps, function(value, name) {
-        element.style[prefixed(element.style, name)] = add ? value : '';
+        prop = prefixed(element.style, name);
+        if (add) {
+            manager.oldCssProps[prop] = element.style[prop];
+            element.style[prop] = value;
+        } else {
+            element.style[prop] = manager.oldCssProps[prop] || '';
+        }
     });
+    if (!add) {
+        manager.oldCssProps = {};
+    }
 }
 
 /**
@@ -3501,6 +3578,10 @@ function noop() { }
  * @fileOverview Contains definition of the core graph object.
  */
 
+// TODO: need to change storage layer:
+// 1. Be able to get all nodes O(1)
+// 2. Be able to get number of links O(1)
+
 /**
  * @example
  *  var graph = require('ngraph.graph')();
@@ -3522,12 +3603,22 @@ function createGraph(options) {
   // array is used to speed up all links enumeration. This is inefficient
   // in terms of memory, but simplifies coding.
   options = options || {};
-  if (options.uniqueLinkId === undefined) {
-    // Request each link id to be unique between same nodes. This negatively
-    // impacts `addLink()` performance (O(n), where n - number of edges of each
-    // vertex), but makes operations with multigraphs more accessible.
-    options.uniqueLinkId = true;
+  if ('uniqueLinkId' in options) {
+    console.warn(
+      'ngraph.graph: Starting from version 0.14 `uniqueLinkId` is deprecated.\n' +
+      'Use `multigraph` option instead\n',
+      '\n',
+      'Note: there is also change in default behavior: From now own each graph\n'+
+      'is considered to be not a multigraph by default (each edge is unique).'
+    );
+
+    options.multigraph = options.uniqueLinkId;
   }
+
+  // Dear reader, the non-multigraphs do not guarantee that there is only
+  // one link for a given pair of node. When this option is set to false
+  // we can save some memory and CPU (18% faster for non-multigraph);
+  if (options.multigraph === undefined) options.multigraph = false;
 
   var nodes = typeof Object.create === 'function' ? Object.create(null) : {},
     links = [],
@@ -3537,7 +3628,7 @@ function createGraph(options) {
     suspendEvents = 0,
 
     forEachNode = createNodeIterator(),
-    createLink = options.uniqueLinkId ? createUniqueLink : createSingleLink,
+    createLink = options.multigraph ? createUniqueLink : createSingleLink,
 
     // Our graph API provides means to listen to graph changes. Users can subscribe
     // to be notified about changes in the graph by using `on` method. However
@@ -3616,14 +3707,14 @@ function createGraph(options) {
      *
      * @return number of nodes in the graph.
      */
-    getNodesCount: function() {
+    getNodesCount: function () {
       return nodesCount;
     },
 
     /**
      * Gets total number of links in the graph.
      */
-    getLinksCount: function() {
+    getLinksCount: function () {
       return links.length;
     },
 
@@ -3696,6 +3787,16 @@ function createGraph(options) {
     hasLink: getLink,
 
     /**
+     * Detects whether there is a node with given id
+     * 
+     * Operation complexity is O(1)
+     * NOTE: this function is synonim for getNode()
+     *
+     * @returns node if there is one; Falsy value otherwise.
+     */
+    hasNode: getNode,
+
+    /**
      * Gets an edge between two nodes.
      * Operation complexity is O(n) where n - number of links of a node.
      *
@@ -3758,14 +3859,13 @@ function createGraph(options) {
 
     var node = getNode(nodeId);
     if (!node) {
-      node = new Node(nodeId);
+      node = new Node(nodeId, data);
       nodesCount++;
       recordNodeChange(node, 'add');
     } else {
+      node.data = data;
       recordNodeChange(node, 'update');
     }
-
-    node.data = data;
 
     nodes[nodeId] = node;
 
@@ -3785,10 +3885,11 @@ function createGraph(options) {
 
     enterModification();
 
-    if (node.links) {
-      while (node.links.length) {
-        var link = node.links[0];
-        removeLink(link);
+    var prevLinks = node.links;
+    if (prevLinks) {
+      node.links = null;
+      for(var i = 0; i < prevLinks.length; ++i) {
+        removeLink(prevLinks[i]);
       }
     }
 
@@ -4036,10 +4137,10 @@ function indexOfElementInArray(element, array) {
 /**
  * Internal structure to represent node;
  */
-function Node(id) {
+function Node(id, data) {
   this.id = id;
   this.links = null;
-  this.data = null;
+  this.data = data;
 }
 
 function addLinkToNode(node, link) {
@@ -4072,7 +4173,7 @@ function hashCode(str) {
 }
 
 function makeLinkId(fromId, toId) {
-  return hashCode(fromId.toString() + '👉 ' + toId.toString());
+  return fromId.toString() + '👉 ' + toId.toString();
 }
 
 },{"ngraph.events":11}],15:[function(require,module,exports){
