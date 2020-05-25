@@ -15,7 +15,16 @@ function modularity(ngraph, options) {
     canCoarse: canCoarse,
     originalModularity: originalModularity,
     newModularity: newModularity,
-    getClass: getClass
+
+    /**
+     * Given original node id returns its class id (community)
+     */
+    getClass: getClass,
+
+    /**
+     * Returns a map from community id to array of neighbor ids.
+     */
+    getAllCommunities: getAllCommunities
   };
 
   function canCoarse() {
@@ -26,6 +35,21 @@ function modularity(ngraph, options) {
   function getClass(nodeId) {
     var node = graph.getNodeIdFromNgraph(nodeId);
     return community.getClass(node);
+  }
+
+  function getAllCommunities() {
+    var communities = new Map();
+    ngraph.forEachNode(function(node) {
+      var classId = getClass(node.id);
+      let neighbors = communities.get(classId);
+      if (!neighbors) {
+        neighbors = [];
+        communities.set(classId, neighbors);
+      }
+      neighbors.push(node.id);
+    });
+
+    return communities;
   }
 }
 
