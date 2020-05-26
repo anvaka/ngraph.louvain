@@ -22,14 +22,13 @@
     "url": "https://github.com/anvaka/ngraph.louvain"
   },
   "dependencies": {
-    "ngraph.random": "0.0.1"
+    "ngraph.random": "1.0.0"
   },
   "devDependencies": {
-    "miserables": "^1.0.0",
-    "ngraph.coarsen": "^1.2.0",
-    "ngraph.graph": "0.0.14",
+    "miserables": "^2.0.0",
+    "ngraph.coarsen": "^1.4.0",
+    "ngraph.graph": "19.1.0",
     "ngraph.svg": "0.0.15",
-    "ngyp": "^1.0.1",
-    "tap": "^12.6.1"
+    "tap": "^14.10.7"
   }
 }
