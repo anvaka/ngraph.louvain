@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "tap test/*.js",
-    "demo": "browserify demo/basic/index.js > demo/basic/bundle.js"
+    "demo": "browserify demo/basic/index.js > demo/basic/bundle.js && browserify demo/coarse/index.js > demo/coarse/bundle.js"
   },
   "keywords": [
     "modularity",
