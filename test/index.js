@@ -20,8 +20,8 @@ test('it can compute modularity for miserables graph', function(t) {
 test('it can handle empty graph', function(t) {
   var graph = createGraph();
   var community = modularity(graph);
-  t.equals(community.originalModularity, 0, 'Modularity of empty graph is 0')
-  t.equals(community.originalModularity, community.newModularity, 'Modularity cannot be improved')
+  t.equal(community.originalModularity, 0, 'Modularity of empty graph is 0')
+  t.equal(community.originalModularity, community.newModularity, 'Modularity cannot be improved')
 
   t.end();
 });
