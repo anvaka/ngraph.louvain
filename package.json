@@ -26,9 +26,9 @@
   },
   "devDependencies": {
     "miserables": "^2.0.0",
-    "ngraph.coarsen": "^1.4.0",
-    "ngraph.graph": "19.1.0",
-    "ngraph.svg": "0.0.15",
-    "tap": "^15.0.9"
+    "ngraph.coarsen": "^1.5.0",
+    "ngraph.graph": "^20.0.0",
+    "ngraph.svg": "0.0.17",
+    "tap": "^15.1.6"
   }
 }

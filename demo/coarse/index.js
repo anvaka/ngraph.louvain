@@ -1,28 +1,44 @@
-var modularity = require('../../');
+var detectClusters = require('../../');
 
 var getColor = require('../lib/getColor.js');
 var graph = require('../lib/getGraph.js');
 
+var coarsen = require('ngraph.coarsen');
+
 console.time('cluster');
-var clusters = modularity(graph);
+var clusters = detectClusters(graph);
 console.timeEnd('cluster');
+let clusterGraph = coarsen(graph, clusters);
 
 // We use svg renderer, but this could be any renderer
-renderGraph(graph);
+renderGraph(clusterGraph);
 
 function renderGraph(graph) {
   var render = require('ngraph.svg');
   var svg = render.svg;
 
+  var springLength = 55;
   var renderer = render(graph, {
     physics: {
-      timeStep: 2,
-      springLength : 55,
-      springCoefficient : 0.008,
-      dragCoefficient : 0.9,
-      gravity : -12
+      springLength : springLength,
+      springCoefficient : 0.07,
+      timeStep: 5,
+      dragCoefficient : 0.09,
+      gravity : -10
     }
   });
+  let layout = renderer.layout;
+  graph.forEachNode(node => {
+    let body = layout.getBody(node.id);
+    body.mass = Math.pow(node.data.size,  3);
+  });
+  graph.forEachLink(link => {
+    let spring = layout.getSpring(link.fromId, link.toId);
+    let fromR = getNodeRadius(graph.getNode(link.fromId));
+    let toR = getNodeRadius(graph.getNode(link.toId));
+    spring.length = springLength + fromR + toR;
+    spring.weight = link.data;
+  })
 
   renderer.node(createNode).placeNode(renderNode);
 
@@ -38,12 +54,18 @@ function renderGraph(graph) {
     ui.attr('transform', 'translate(' + (pos.x ) + ',' + (pos.y) + ')');
   }
 
-  function createNode() {
+  function getNodeRadius(node) {
+    let nodeArea = (14 * 14);
+    let area = nodeArea * node.data.size;
+    return Math.sqrt(area / Math.PI);
+  }
+
+  function createNode(node) {
     var ui = svg('g');
         // Create SVG text element with user id as content
     var label = svg('text').attr('y', '-8px');
     var circle = svg('circle', {
-      r: 7,
+      r: getNodeRadius(node),
       stroke: '#fff',
       fill: '#ff00ef',
       'stroke-width': '1.5px'
