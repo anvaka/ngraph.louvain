@@ -29,6 +29,6 @@
     "ngraph.coarsen": "^1.5.0",
     "ngraph.graph": "^20.0.0",
     "ngraph.svg": "0.0.17",
-    "tap": "^15.1.6"
+    "tap": "^16.3.0"
   }
 }
