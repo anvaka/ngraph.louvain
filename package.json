@@ -4,7 +4,7 @@
   "description": "Given a graph instance detects communities using the Louvain Method",
   "main": "index.js",
   "scripts": {
-    "test": "tap --branches=50 --lines=80 --statements=80 --functions=80 test/*.js",
+    "test": "tap --allow-incomplete-coverage test/*.js",
     "demo": "browserify demo/basic/index.js > demo/basic/bundle.js && browserify demo/coarse/index.js > demo/coarse/bundle.js"
   },
   "keywords": [
@@ -29,6 +29,6 @@
     "ngraph.coarsen": "^1.5.0",
     "ngraph.graph": "^20.0.0",
     "ngraph.svg": "0.0.17",
-    "tap": "^16.3.4"
+    "tap": "^21.0.1"
   }
 }
